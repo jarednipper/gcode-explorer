@@ -9,6 +9,7 @@ import {
   watchEffect,
 } from 'vue'
 import {
+  ExternalLink,
   LayersArrowDown,
   LayersArrowUp,
   Pause,
@@ -553,13 +554,14 @@ function handleDragLeave(event: DragEvent): void {
         <span v-if="fileName" class="file-name" :title="fileName">{{
           fileName
         }}</span>
-        <button
-          class="secondary outline open-button"
-          type="button"
-          @click="openFilePicker"
+        <a
+          class="repository-link"
+          href="https://github.com/jarednipper/gcode-explorer"
+          target="_blank"
         >
-          Open GCODE
-        </button>
+          GitHub repo
+          <ExternalLink :size="12" aria-hidden="true" />
+        </a>
         <label class="visually-hidden" for="gcode-file"
           >Choose a GCODE file</label
         >
