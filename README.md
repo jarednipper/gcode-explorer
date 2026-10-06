@@ -1,6 +1,8 @@
 # GCODE Explorer
 
-A small browser app for reading GCODE alongside line-by-line explanations and a top-down preview. The preview uses an HTML Canvas to draw motion segments at the selected layer. The control pane below the table supports jumping to a line or Z layer and auto-playing through commands. A Web Worker indexes newline byte offsets in chunks, exposes each indexed section as it becomes available, and reads and explains only the visible line batches. The preview supports most commands, but arcs are not yet implemented.
+[GCODE Explorer](https://jarednipper.github.io/gcode-explorer/)
+
+A small browser app for reading GCODE alongside line-by-line explanations and a top-down preview. The preview uses an HTML Canvas to draw motion segments at the selected layer. A Web Worker processes the file off the main thread to keep the UI responsive, making lines available as it goes and explaining only those currently visible on screen. The preview supports most commands, but arcs are not yet implemented.
 
 ## Run locally
 
@@ -12,9 +14,7 @@ npm run dev
 ## Deploy to GitHub Pages
 
 The included GitHub Actions workflow builds and deploys the app to GitHub Pages
-when changes are pushed to `main`, or when the workflow is manually run. In the
-repository settings, set **Pages → Build and deployment → Source** to **GitHub
-Actions**.
+when changes are pushed to `main`, or when the workflow is manually run.
 
 ## Checks
 
