@@ -23,6 +23,7 @@ const rowHeight = 38
 const visibleRowWindow = 100
 const batchSize = 64
 const maxCachedBatches = 8
+const appBaseUrl = import.meta.env.BASE_URL
 
 interface GcodeRow {
   index: number
@@ -545,7 +546,7 @@ function handleDragLeave(event: DragEvent): void {
     @drop.prevent="handleDrop"
   >
     <header class="topbar">
-      <a class="brand" href="/" aria-label="GCODE Explorer home"
+      <a class="brand" :href="appBaseUrl" aria-label="GCODE Explorer home"
         >GCODE Explorer</a
       >
       <div class="file-actions">
