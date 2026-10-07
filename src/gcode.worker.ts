@@ -80,6 +80,8 @@ async function indexFile(request: LoadMessage): Promise<void> {
       path.zPositions.buffer,
       path.zLineIndices.buffer,
       path.zValues.buffer,
+      path.lineDurationsSeconds.buffer,
+      path.zeroDurationLines.buffer,
     ])
     self.postMessage({
       type: 'complete',

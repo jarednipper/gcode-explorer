@@ -5,6 +5,8 @@ export interface MotionPathData {
   zPositions: Float64Array
   zLineIndices: Uint32Array
   zValues: Float64Array
+  lineDurationsSeconds: Float32Array
+  zeroDurationLines: Uint8Array
 }
 
 export function getZAtLine(
@@ -50,18 +52,27 @@ export class GcodeMotionIndex {
   private zPositions = new Float64Array(1024)
   private zLineIndices = new Uint32Array(128)
   private zValues = new Float64Array(128)
+  private lineDurationsSeconds = new Float32Array(1024)
+  private zeroDurationLines = new Uint8Array(1024)
+  private lineCount = 0
   private segmentCount = 0
   private zChangeCount = 0
   private x = 0
   private y = 0
   private z = 0
   private e = 0
+  private feedRate = 0
   private absolutePositioning = true
   private absoluteExtrusion = true
   private unitScale = 1
 
   addLine(line: string, lineIndex: number): void {
+    this.lineCount = Math.max(this.lineCount, lineIndex + 1)
+    this.ensureLineDurationCapacity(lineIndex + 1)
     const commandText = line.split(';', 1)[0].trim()
+    if (!commandText) {
+      this.zeroDurationLines[lineIndex] = 1
+    }
     const command = commandText.match(
       /^(?:N\d+\s+)?([GMT])(\d+(?:\.\d+)?)(.*)$/i,
     )
@@ -115,12 +126,18 @@ export class GcodeMotionIndex {
 
     if (code !== 'G0' && code !== 'G1') return
 
+    const feedRateValue = parameters.match(/F([+-]?(?:\d+(?:\.\d*)?|\.\d+))/i)
+    if (feedRateValue) {
+      this.feedRate = Number(feedRateValue[1]) * this.unitScale
+    }
+
     const xValue = values.get('X')
     const yValue = values.get('Y')
     const zValue = values.get('Z')
     const eValue = values.get('E')
     const fromX = this.x
     const fromY = this.y
+    const fromZ = this.z
     const toZ =
       zValue === undefined
         ? this.z
@@ -150,6 +167,16 @@ export class GcodeMotionIndex {
     this.x = toX
     this.y = toY
     this.setZ(toZ, lineIndex)
+    const xyzDistance = Math.hypot(toX - fromX, toY - fromY, toZ - fromZ)
+    const distance = xyzDistance > 0 ? xyzDistance : Math.abs(extrusionDelta)
+    if (
+      distance > 0 &&
+      this.feedRate > 0 &&
+      (code !== 'G0' || feedRateValue !== null)
+    ) {
+      this.ensureLineDurationCapacity(lineIndex + 1)
+      this.lineDurationsSeconds[lineIndex] = (distance / this.feedRate) * 60
+    }
     if (fromX === toX && fromY === toY) return
 
     this.ensureCapacity()
@@ -169,7 +196,22 @@ export class GcodeMotionIndex {
       zPositions: this.zPositions.slice(0, this.segmentCount),
       zLineIndices: this.zLineIndices.slice(0, this.zChangeCount),
       zValues: this.zValues.slice(0, this.zChangeCount),
+      lineDurationsSeconds: this.lineDurationsSeconds.slice(0, this.lineCount),
+      zeroDurationLines: this.zeroDurationLines.slice(0, this.lineCount),
     }
+  }
+
+  private ensureLineDurationCapacity(requiredLength: number): void {
+    if (requiredLength <= this.lineDurationsSeconds.length) return
+
+    let capacity = this.lineDurationsSeconds.length
+    while (capacity < requiredLength) capacity *= 2
+    const next = new Float32Array(capacity)
+    next.set(this.lineDurationsSeconds)
+    this.lineDurationsSeconds = next
+    const nextZeroDurationLines = new Uint8Array(capacity)
+    nextZeroDurationLines.set(this.zeroDurationLines)
+    this.zeroDurationLines = nextZeroDurationLines
   }
 
   private setZ(z: number, lineIndex: number): void {

@@ -68,7 +68,7 @@ const isLoading = ref(false)
 const loadProgress = ref(0)
 const lineInput = ref('')
 const zLayerInput = ref('')
-const playbackSpeed = ref(10)
+const playbackSpeed = ref(1)
 const isPlaying = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const comparisonShell = ref<HTMLDivElement | null>(null)
@@ -134,9 +134,7 @@ const previousLayerLine = computed(() => {
 const nextLayerLine = computed(() => {
   const selected = selectedLine.value
   if (selected === null) return undefined
-  return extrusionLayers.value.find(
-    (layer) => layer.line > selected,
-  )?.line
+  return extrusionLayers.value.find((layer) => layer.line > selected)?.line
 })
 
 watch(
@@ -259,6 +257,8 @@ function handleWorkerMessage(event: MessageEvent<WorkerResponse>): void {
       zPositions: message.zPositions,
       zLineIndices: message.zLineIndices,
       zValues: message.zValues,
+      lineDurationsSeconds: message.lineDurationsSeconds,
+      zeroDurationLines: message.zeroDurationLines,
     }
     return
   }
@@ -430,22 +430,44 @@ function skipLayer(direction: 'previous' | 'next'): void {
 function stopPlayback(): void {
   isPlaying.value = false
   if (playbackTimer !== undefined) {
-    window.clearInterval(playbackTimer)
+    window.clearTimeout(playbackTimer)
     playbackTimer = undefined
   }
 }
 
 function startPlaybackTimer(): void {
-  if (playbackTimer !== undefined) window.clearInterval(playbackTimer)
+  if (playbackTimer !== undefined) window.clearTimeout(playbackTimer)
 
-  playbackTimer = window.setInterval(() => {
+  let currentLine = selectedLine.value ?? -1
+  while (
+    currentLine >= 0 &&
+    currentLine < lineCount.value &&
+    pathData.value?.zeroDurationLines[currentLine] === 1
+  ) {
+    currentLine += 1
+    if (currentLine >= lineCount.value) {
+      stopPlayback()
+      return
+    }
+    selectAndRevealLine(currentLine)
+  }
+
+  const estimatedDuration =
+    (pathData.value?.lineDurationsSeconds[currentLine] ?? 0) * 1000
+  const zeroDuration = pathData.value?.zeroDurationLines[currentLine] === 1
+  const delay = zeroDuration
+    ? 0
+    : (estimatedDuration > 0 ? estimatedDuration : 100) / playbackSpeed.value
+
+  playbackTimer = window.setTimeout(() => {
     const nextLine = (selectedLine.value ?? -1) + 1
     if (nextLine >= lineCount.value) {
       stopPlayback()
       return
     }
     selectAndRevealLine(nextLine)
-  }, 1000 / playbackSpeed.value)
+    startPlaybackTimer()
+  }, delay)
 }
 
 function togglePlayback(): void {
@@ -622,7 +644,11 @@ function handleDragLeave(event: DragEvent): void {
         </div>
       </section>
 
-      <section v-else class="explorer" aria-label="G-code and line explanations">
+      <section
+        v-else
+        class="explorer"
+        aria-label="G-code and line explanations"
+      >
         <div class="explorer-content">
           <div class="table-panel">
             <div
@@ -701,7 +727,7 @@ function handleDragLeave(event: DragEvent): void {
                 </div>
               </div>
             </div>
-            <div class="control-pane" aria-label="G-code playback controls">
+            <div class="control-pane" aria-label="GCODE playback controls">
               <label class="control-field">
                 <span>Line</span>
                 <input
@@ -770,20 +796,20 @@ function handleDragLeave(event: DragEvent): void {
               >
                 <Pause v-if="isPlaying" aria-hidden="true" />
                 <Play v-else aria-hidden="true" />
-                <span>{{ isPlaying ? 'Pause' : 'Auto-play' }}</span>
+                <span>{{ isPlaying ? 'Pause' : 'Play' }}</span>
               </button>
               <label v-if="isPlaying" class="speed-control">
-                <span>Speed</span>
+                <span>Playback rate</span>
                 <select
                   v-model.number="playbackSpeed"
                   aria-label="Playback speed"
+                  title="Estimated from G-code feedrates; does not account for acceleration, rapid limits, speed overrides, waits, or arcs."
                 >
-                  <option :value="1">1 command/s</option>
-                  <option :value="5">5 commands/s</option>
-                  <option :value="10">10 commands/s</option>
-                  <option :value="20">20 commands/s</option>
-                  <option :value="40">40 commands/s</option>
-                  <option :value="80">80 commands/s</option>
+                  <option :value="0.25">0.25x</option>
+                  <option :value="0.5">0.5x</option>
+                  <option :value="1">1x</option>
+                  <option :value="2">2x</option>
+                  <option :value="10">10x</option>
                 </select>
               </label>
             </div>

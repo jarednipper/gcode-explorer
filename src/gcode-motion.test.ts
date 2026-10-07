@@ -76,6 +76,42 @@ describe('GcodeMotionIndex', () => {
     expect([...path.extruding]).toEqual([1, 1, 0])
   })
 
+  it('estimates move durations from modal feedrates and current units', () => {
+    const path = buildPath([
+      'G1 X10 F600',
+      'G1 X20',
+      'G20',
+      'G92 X0',
+      'G1 X1 F60',
+      'G21',
+      'M83',
+      'G1 E2 F120',
+      'G0 X10',
+      'M104 S210',
+    ])
+
+    expect([...path.lineDurationsSeconds]).toHaveLength(10)
+    expect(path.lineDurationsSeconds[0]).toBeCloseTo(1)
+    expect(path.lineDurationsSeconds[1]).toBeCloseTo(1)
+    expect(path.lineDurationsSeconds[4]).toBeCloseTo(1)
+    expect(path.lineDurationsSeconds[7]).toBeCloseTo(1)
+    expect(path.lineDurationsSeconds[8]).toBe(0)
+    expect(path.lineDurationsSeconds[9]).toBe(0)
+  })
+
+  it('marks blank and comment-only lines as zero-duration lines', () => {
+    const path = buildPath([
+      '; comment',
+      '  ',
+      'G1 X10 F600',
+      'G1 X20 ; inline',
+    ])
+
+    expect([...path.zeroDurationLines]).toEqual([1, 1, 0, 0])
+    expect(path.lineDurationsSeconds[0]).toBe(0)
+    expect(path.lineDurationsSeconds[1]).toBe(0)
+  })
+
   it('tracks the active Z position on XY moves and standalone Z changes', () => {
     const path = buildPath([
       'G1 X1 Y1 Z0.2 E1',
