@@ -115,7 +115,7 @@ describe('explainGcodeLine', () => {
     )
   })
 
-  it('recognizes common GCODE file extensions', () => {
+  it('recognizes common G-code file extensions', () => {
     expect(isGcodeFile('print.GCODE')).toBe(true)
     expect(isGcodeFile('print.txt')).toBe(false)
   })

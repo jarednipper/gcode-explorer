@@ -409,7 +409,7 @@ export function explainGcodeLine(line: string): string {
   const command = commandText.match(/^([GMT])(\d+(?:\.\d+)?)(.*)$/i)
 
   if (!command) {
-    return 'Unrecognized or printer-specific GCODE line.'
+    return 'Unrecognized or printer-specific G-code line.'
   }
 
   const code = `${command[1].toUpperCase()}${command[2]}`

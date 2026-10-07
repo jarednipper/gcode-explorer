@@ -1,8 +1,8 @@
-# GCODE Explorer
+# G-code Explorer
 
-[GCODE Explorer](https://jarednipper.github.io/gcode-explorer/)
+[G-code Explorer](https://jarednipper.github.io/gcode-explorer/)
 
-A small browser app for reading GCODE alongside line-by-line explanations and a top-down preview. The preview uses an HTML Canvas to draw motion segments at the selected layer. A Web Worker processes the file off the main thread to keep the UI responsive, making lines available as it goes and explaining only those currently visible on screen. The preview supports most commands, but arcs are not yet implemented.
+A small browser app for reading G-code alongside line-by-line explanations and a top-down preview. The preview uses an HTML Canvas to draw motion segments at the selected layer. A Web Worker processes the file off the main thread to keep the UI responsive, making lines available as it goes and explaining only those currently visible on screen. The preview supports most commands, but arcs are not yet implemented.
 
 ## Run locally
 

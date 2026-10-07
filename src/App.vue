@@ -325,7 +325,7 @@ function loadFile(file: File | undefined): void {
 
   errorMessage.value = ''
   if (!isGcodeFile(file.name)) {
-    errorMessage.value = 'Choose a GCODE file (.gcode, .gco, .gc, or .g).'
+    errorMessage.value = 'Choose a G-code file (.gcode, .gco, .gc, or .g).'
     return
   }
 
@@ -515,7 +515,7 @@ function handleDrop(event: DragEvent): void {
   if (!files?.length) return
 
   if (files.length > 1) {
-    errorMessage.value = 'Drop one GCODE file at a time.'
+    errorMessage.value = 'Drop one G-code file at a time.'
     return
   }
 
@@ -547,8 +547,8 @@ function handleDragLeave(event: DragEvent): void {
     @drop.prevent="handleDrop"
   >
     <header class="topbar">
-      <a class="brand" :href="appBaseUrl" aria-label="GCODE Explorer home"
-        >GCODE Explorer</a
+      <a class="brand" :href="appBaseUrl" aria-label="G-code Explorer home"
+        >G-code Explorer</a
       >
       <div class="file-actions">
         <span v-if="fileName" class="file-name" :title="fileName">{{
@@ -563,7 +563,7 @@ function handleDragLeave(event: DragEvent): void {
           <ExternalLink :size="12" aria-hidden="true" />
         </a>
         <label class="visually-hidden" for="gcode-file"
-          >Choose a GCODE file</label
+          >Choose a G-code file</label
         >
         <input
           id="gcode-file"
@@ -604,10 +604,10 @@ function handleDragLeave(event: DragEvent): void {
             <small>{{ loadProgress }}% indexed</small>
           </template>
           <template v-else>
-            <p>Visualize and explore GCODE commands.</p>
+            <p>Visualize and explore G-code commands.</p>
             <div class="example-actions">
               <button type="button" @click="openFilePicker">
-                Open a GCODE file
+                Open a G-code file
               </button>
               <button
                 class="example-link"
@@ -622,7 +622,7 @@ function handleDragLeave(event: DragEvent): void {
         </div>
       </section>
 
-      <section v-else class="explorer" aria-label="GCODE and line explanations">
+      <section v-else class="explorer" aria-label="G-code and line explanations">
         <div class="explorer-content">
           <div class="table-panel">
             <div
@@ -635,7 +635,7 @@ function handleDragLeave(event: DragEvent): void {
                   <span class="column-heading line-heading" role="columnheader"
                     >Line</span
                   >
-                  <span class="column-heading" role="columnheader">GCODE</span>
+                  <span class="column-heading" role="columnheader">G-code</span>
                   <span class="column-heading" role="columnheader"
                     >Explanation</span
                   >
@@ -645,7 +645,7 @@ function handleDragLeave(event: DragEvent): void {
                   ref="scrollContainer"
                   class="comparison-scroll"
                   role="grid"
-                  aria-label="Synchronized GCODE lines and explanations"
+                  aria-label="Synchronized G-code lines and explanations"
                   tabindex="0"
                   @scroll="updateViewport"
                   @keydown="handleGridKeydown"
@@ -701,7 +701,7 @@ function handleDragLeave(event: DragEvent): void {
                 </div>
               </div>
             </div>
-            <div class="control-pane" aria-label="GCODE playback controls">
+            <div class="control-pane" aria-label="G-code playback controls">
               <label class="control-field">
                 <span>Line</span>
                 <input
@@ -758,13 +758,13 @@ function handleDragLeave(event: DragEvent): void {
                 :aria-pressed="isPlaying"
                 :aria-label="
                   isPlaying
-                    ? 'Turn off auto-play GCODE progression'
-                    : 'Turn on auto-play GCODE progression'
+                    ? 'Turn off auto-play G-code progression'
+                    : 'Turn on auto-play G-code progression'
                 "
                 :title="
                   isPlaying
-                    ? 'Turn off auto-play GCODE progression'
-                    : 'Turn on auto-play GCODE progression'
+                    ? 'Turn off auto-play G-code progression'
+                    : 'Turn on auto-play G-code progression'
                 "
                 @click="togglePlayback"
               >
@@ -798,7 +798,7 @@ function handleDragLeave(event: DragEvent): void {
     </main>
 
     <div v-if="isDragging" class="drop-overlay" aria-hidden="true">
-      <div>Drop one GCODE file to open it</div>
+      <div>Drop one G-code file to open it</div>
     </div>
   </div>
 </template>
