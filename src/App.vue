@@ -799,7 +799,7 @@ function handleDragLeave(event: DragEvent): void {
                 <span>{{ isPlaying ? 'Pause' : 'Play' }}</span>
               </button>
               <label v-if="isPlaying" class="speed-control">
-                <span>Playback rate</span>
+                <span>Speed</span>
                 <select
                   v-model.number="playbackSpeed"
                   aria-label="Playback speed"
